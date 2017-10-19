@@ -1,15 +1,9 @@
 <template>
-  <div class="good-table" :class="{'rtl': rtl}">
-    <div :class="{'responsive': responsive}">
-      <div v-if="title" class="table-header clearfix">
-        <h2 class="table-title pull-left">{{title}}</h2>
-        <div class="actions pull-right">
-        </div>
-      </div>
+ <div>
       <table ref="table" :class="styleClass">
         <thead>
-          <tr v-if="globalSearch && externalSearchQuery == null">
-            <td :colspan="lineNumbers ? columns.length + 1: columns.length">
+          <tr v-if="globalSearch && externalSearchQuery == null" >
+            <td :colspan="lineNumbers ? columns.length + 1: columns.length" >
               <div class="global-search">
                 <span class="global-search-icon">
                   <img src="../images/search_icon.png" alt="Search Icon" />
@@ -18,7 +12,7 @@
               </div>
             </td>
           </tr>
-          <tr>
+          <tr class="sortable">
             <th v-if="lineNumbers" class="line-numbers"></th>
             <th v-for="(column, index) in columns"
               @click="sort(index)"
@@ -72,36 +66,37 @@
           </tr>
         </tbody>
       </table>
-    </div>
-
-    <div class="table-footer clearfix" v-if="paginate">
-      <div class="datatable-length pull-left">
-        <label>
-          <span>{{rowsPerPageText}}</span>
-          <span v-if="perPage" class="perpage-count">{{perPage}}</span>
-          <select v-if="!perPage" class="browser-default" @change="onTableLength">
-            <option value="10">10</option>
-            <option value="20">20</option>
-            <option value="30">30</option>
-            <option value="40">40</option>
-            <option value="50">50</option>
-            <option value="-1">{{allText}}</option>
-          </select>
-        </label>
-      </div>
-      <div class="pagination-controls pull-right">
-        <a href="javascript:undefined" class="page-btn" @click.prevent.stop="previousPage" tabindex="0">
-          <span class="chevron" v-bind:class="{ 'left': !rtl, 'right': rtl }"></span>
-          <span>{{prevText}}</span>
-        </a>
-        <div class="info">{{paginatedInfo}}</div>
-        <a href="javascript:undefined" class="page-btn" @click.prevent.stop="nextPage" tabindex="0">
-          <span >{{nextText}}</span>
-          <span class="chevron" v-bind:class="{ 'right': !rtl, 'left': rtl }"></span>
-        </a>
-      </div>
-    </div>
+<div class="row">
+  <div class="col-sm-6">	  
+	  <span>{{rowsPerPageText}} </span>
+	  <span v-if="perPage" class="perpage-count">{{perPage}} </span>
+	<label>
+	  <select v-if="!perPage" class="form-control" @change="onTableLength">
+		<option value="10">10</option>
+		<option value="20">20</option>
+		<option value="30">30</option>
+		<option value="40">40</option>
+		<option value="50">50</option>
+		<option value="-1">{{allText}}</option>
+	  </select>
+	</label>
   </div>
+  <div class="col-sm-6">
+	<div class="pull-right">
+		<a href="javascript:undefined" class="page-btn" @click.prevent.stop="previousPage" tabindex="0">
+			<span class="fa fa-chevron-circle-left " v-bind:class="{ 'left': !rtl, 'right': rtl }"></span>
+			<span>{{prevText}}</span>
+		</a>
+		<span class="info">{{paginatedInfo}}</span>
+		<a href="javascript:undefined" class="page-btn" @click.prevent.stop="nextPage" tabindex="0">
+          <span >{{nextText}}</span>
+          <span class="fa fa-chevron-circle-right" v-bind:class="{ 'right': !rtl, 'left': rtl }"></span>
+        </a>
+	</div>
+  </div>
+ 
+</div>
+</div>
 </template>
 
 <script>
@@ -109,7 +104,7 @@ import {format, parse, compareAsc} from 'date-fns/esm'
   export default {
     name: 'vue-good-table',
     props: {
-      styleClass: {default: 'table table-bordered'},
+      styleClass: {default: 'table '},
       title: '',
       columns: {},
       rows: {},
@@ -234,7 +229,10 @@ import {format, parse, compareAsc} from 'date-fns/esm'
 
         function formatDate(v) {
           // convert to date
-          return format(parse(v, column.inputFormat, new Date()), column.outputFormat);
+          if (v == null)
+            return "";
+          else
+            return moment(v).format('YYYY MMM DD');
         }
 
         var value = this.collect(obj, column.field);
@@ -272,9 +270,9 @@ import {format, parse, compareAsc} from 'date-fns/esm'
         }
         if (index === this.sortColumn) {
           if (this.sortType === 'desc') {
-            classString += 'sorting-desc ';
+            classString += 'st-sort-descent ';
           } else {
-            classString += 'sorting-asc ';
+            classString += 'st-sort-ascent ';
           }
         }
         classString += this.getDataStyle(index, 'th');
@@ -567,311 +565,3 @@ import {format, parse, compareAsc} from 'date-fns/esm'
   }
 </script>
 
-<style lang="css" scoped>
-
-/* Utility styles
-************************************************/
-.right-align{
-  text-align: right;
-}
-
-.left-align{
-  text-align: left;
-}
-
-.center-align{
-  text-align: center;
-}
-
-.pull-left{
-  float:  left !important;
-}
-
-.pull-right{
-  float:  right !important;
-}
-
-.clearfix::after {
-  display: block;
-  content: "";
-  clear: both;
-}
-
-/* Table specific styles
-************************************************/
-
-  table{
-    border-collapse: collapse;
-    background-color: transparent;
-    margin-bottom:  0px;
-  }
-  .table{
-    width: 100%;
-    max-width: 100%;
-    table-layout: auto;
-  }
-
-  .table.table-striped tbody tr:nth-of-type(odd) {
-      background-color: rgba(35,41,53,.05);
-  }
-
-  .table.table-bordered td, .table-bordered th {
-      border: 1px solid #DDD;
-  }
-
-  .table td, .table th:not(.line-numbers) {
-    padding: .75rem 1.5rem .75rem .75rem;
-    vertical-align: top;
-    border-top: 1px solid #ddd;
-  }
-
-  .rtl .table td, .rtl .table th:not(.line-numbers) {
-    padding: .75rem .75rem .75rem 1.5rem;
-  }
-
-  .table.condensed td, .table.condensed th {
-    padding: .4rem .4rem .4rem .4rem;
-  }
-
-  .table thead th, .table.condensed thead th {
-    vertical-align: bottom;
-    border-bottom:  2px solid #ddd;
-    padding-right: 1.5rem;
-    background-color: rgba(35,41,53,0.03);
-  }
-  .rtl .table thead th, .rtl .table.condensed thead th {
-    padding-left:  1.5rem;
-    padding-right:  .75rem;
-  }
-
-  tr.clickable {
-    cursor: pointer;
-  }
-
-  .table input{
-    display: block;
-    width: calc(100% - 24px);
-    height: 34px;
-    padding: 6px 12px;
-    font-size: 14px;
-    line-height: 1.42857143;
-    color: #555;
-    background-color: #fff;
-    background-image: none;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    -webkit-box-shadow: inset 0 1px 1px rgba(35,41,53,.075);
-    box-shadow: inset 0 1px 1px rgba(35,41,53,.075);
-    -webkit-transition: border-color ease-in-out .15s,-webkit-box-shadow ease-in-out .15s;
-    -o-transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
-    transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
-  }
-
-  table th.sorting-asc,
-  table th.sorting-desc {
-    color: rgba(0, 0, 0, 0.66);
-    position: relative;
-  }
-
-  table th.sorting:after,
-  table th.sorting-asc:after  {
-    font-family: 'Material Icons';
-    position:  absolute;
-    height:  0px;
-    width:  0px;
-    content: '';
-    display: none;
-    border-left: 6px solid transparent;
-    border-right: 6px solid transparent;
-    border-bottom: 6px solid rgba(0, 0, 0, 0.66);
-    margin-top:  6px;
-    margin-left:  5px;
-  }
-
-  .rtl table th.sorting:after,
-  .rtl table th.sorting-asc:after{
-    margin-right:  5px;
-    margin-left:  0px;
-  }
-
-  table th.sorting:hover:after{
-    display: inline-block;
-    border-bottom-color: rgba(35,41,53,0.25);
-  }
-
-  table th.sorting-asc:after,
-  table th.sorting-desc:after {
-    display: inline-block;
-  }
-
-  table th.sorting-desc:after {
-    border-top:  6px solid rgba(0, 0, 0, 0.66);
-    border-left: 6px solid transparent;
-    border-right: 6px solid transparent;
-    border-bottom: none;
-    margin-top:  8px;
-  }
-
-.responsive {
-  width: 100%;
-  overflow-x: scroll;
-}
-
-/* Table header specific styles
-************************************************/
-
-.table-header{
-  padding:  .75rem;
-}
-
-.table-header .table-title{
-  margin:  0px;
-  font-size: 18px;
-}
-
-
-/* Table footer specific styles
-************************************************/
-
-  .table-footer{
-    /* background-color: rgba(35,41,53, 0.03); */
-    background-color: rgba(35,41,53,0.05);
-    border: 1px solid #DDD;
-    margin-bottom:  2rem;
-    margin-top:  0px;
-    padding:  1rem;
-    border-bottom-right-radius: 5px;
-    border-bottom-left-radius: 5px;
-    font-size: 14px;
-    color:  rgba(0, 0, 0, 0.44);
-  }
-
-  .table-footer>div{
-    display: inline-block;
-  }
-
-  .pagination-controls>*{
-    display: inline-block;
-  }
-
-  .pagination-controls a{
-    text-decoration: none;
-    color: rgba(0, 0, 0, 0.66);
-    font-size: 14px;
-    font-weight: 600;
-    opacity: 0.8;
-  }
-
-  .pagination-controls a:hover{
-    opacity: 1;
-  }
-
-  .pagination-controls a span{
-    display: inline-block;
-    vertical-align: middle;
-  }
-
-  .pagination-controls .info{
-    margin:  0px 15px;
-    font-size: 13px;
-    font-weight: bold;
-    color:  rgba(0, 0, 0, 0.40);
-  }
-
-  .pagination-controls a .chevron{
-    width:  24px;
-    height:  24px;
-    border-radius: 15%;
-    /* border:  1px solid rgba(35,41,53,0.2);
-    background-color: #fff; */
-    position:  relative;
-    margin:  0px 8px;
-  }
-
-  .pagination-controls .chevron::after{
-    content:  '';
-    position:  absolute;
-    display:  block;
-    left:  50%;
-    top:  50%;
-    margin-top:  -6px;
-    border-top: 6px solid transparent;
-    border-bottom: 6px solid transparent;
-  }
-
-  .pagination-controls .chevron.left::after{
-    border-right:  6px solid rgba(0, 0, 0, 0.66);
-    margin-left:  -3px;
-  }
-
-  .pagination-controls .chevron.right::after{
-    border-left:  6px solid rgba(0, 0, 0, 0.66);
-    margin-left:  -3px;
-  }
-
-  .table-footer select {
-    display: inline-block;
-    background-color: transparent;
-    width: auto;
-    padding: 0;
-    border: 0;
-    border-radius: 0;
-    height: auto;
-    font-size: 14px;
-    margin-left: 8px;
-    color:  rgba(0, 0, 0, 0.55);
-    font-weight: bold;
-  }
-
-  .table-footer .perpage-count{
-    color:  rgba(0, 0, 0, 0.55);
-    font-weight: bold;
-  }
-
-  @media only screen and (max-width: 750px) {
-    /* on small screens hide the info */
-    .pagination-controls .info{
-      display:  none;
-    }
-  }
-
-  /* Global Search
-  **********************************************/
-  .global-search{
-    position:  relative;
-    padding-left: 40px;
-  }
-  .global-search-icon{
-    position:  absolute;
-    left:  0px;
-    max-width:  32px;
-  }
-  .global-search-icon > img{
-    max-width:  100%;
-    margin-top:  8px;
-    opacity: 0.5;
-  }
-  table .global-search-input{
-   width:  calc(100% - 30px);
-  }
-
-  /* Line numbers
-  **********************************************/
-  table th.line-numbers, .table.condensed th.line-numbers{
-    background-color: rgba(35,41,53,0.05);
-    padding-left:  3px;
-    padding-right:  3px;
-    word-wrap: break-word;
-    width: 45px;
-    text-align: center;
-  }
-
-  .good-table.rtl{
-    direction: rtl;
-  }
-
-  .text-disabled{
-    color:  #aaa;
-  }
-
-</style>
