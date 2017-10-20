@@ -1,134 +1,141 @@
 <template>
- <div>
-      <table ref="table" :class="styleClass">
-        <thead>
-          <tr v-if="globalSearch && externalSearchQuery == null" >
-            <td :colspan="lineNumbers ? columns.length + 1: columns.length" >
-              <div class="global-search">
-                <span class="global-search-icon">
-                  <img src="../images/search_icon.png" alt="Search Icon" />
-                </span>
-                <input type="text" class="form-control global-search-input" :placeholder="globalSearchPlaceholder" v-model="globalSearchTerm" @keyup.enter="searchTable()" />
-              </div>
-            </td>
-          </tr>
-          <tr class="sortable">
-            <th v-if="lineNumbers" class="line-numbers"></th>
-            <th v-for="(column, index) in columns"
+  <div>
+    {{showSelection}}
+    <table ref="table" :class="styleClass">
+      <thead>
+        <tr v-if="globalSearch && externalSearchQuery == null">
+          <td :colspan="lineNumbers ? columns.length + 1: columns.length">
+            <div class="global-search">
+              <span class="global-search-icon">
+                <img src="../images/search_icon.png" alt="Search Icon" />
+              </span>
+              <input type="text" class="form-control global-search-input" :placeholder="globalSearchPlaceholder" v-model="globalSearchTerm" @keyup.enter="searchTable()" />
+            </div>
+          </td>
+        </tr>
+        <tr class="sortable">
+          <th v-if="showSelection" class="line-numbers"></th>
+          <th v-if="lineNumbers" class="line-numbers"></th>
+          <th v-for="(column, index) in columns"
               @click="sort(index)"
               :class="columnHeaderClass(column, index)"
               :style="{width: column.width ? column.width : 'auto'}"
               v-if="!column.hidden">
-              <slot name="table-column" :column="column">
-                <span>{{column.label}}</span>
-              </slot>
-            </th>
-            <slot name="thead-tr"></slot>
-          </tr>
-          <tr v-if="hasFilterRow">
-            <th v-if="lineNumbers"></th>
-            <th v-for="(column, index) in columns" v-if="!column.hidden">
-               <div v-if="column.filterable">
-                  <input v-if="!column.filterDropdown"
-                        type="text" class="form-control" :placeholder="'Filter ' + column.label"
-                        :value="columnFilters[column.field]"
-                        v-on:input="updateFilters(column, $event.target.value)">
-
-                <select v-if="column.filterDropdown" class="form-control"
-                        :value="columnFilters[column.field]"
-                        v-on:input="updateFilters(column, $event.target.value)">
-                          <option value=""></option>
-                          <option v-for="option in column.filterOptions" :value="option">{{ option }}</option>
-                </select>
-              </div>
-            </th>
-          </tr>
-        </thead>
-
-        <tbody>
-          <tr v-for="(row, index) in paginated" :class="onClick ? 'clickable' : ''" @click="click(row, index)">
-            <th v-if="lineNumbers" class="line-numbers">{{ getCurrentIndex(index) }}</th>
-            <slot name="table-row" :row="row" :formattedRow="formattedRow(row)" :index="index">
-              <td v-for="(column, i) in columns" :class="getDataStyle(i, 'td')" v-if="!column.hidden">
-                <span v-if="!column.html">{{ collectFormatted(row, column) }}</span>
-                <span v-if="column.html" v-html="collect(row, column.field)"></span>
-              </td>
+            <slot name="table-column" :column="column">
+              <span>{{column.label}}</span>
             </slot>
-          </tr>
-          <tr v-if="processedRows.length === 0">
-            <td :colspan="columns.length">
-              <slot name="emptystate">
-                <div class="center-align text-disabled">
-                  No data for table.
-                </div>
-              </slot>
+          </th>
+          <slot name="thead-tr"></slot>
+        </tr>
+        <tr v-if="hasFilterRow">
+          <th v-if="showSelection" class="line-numbers">
+            
+          </th>
+          <th v-if="lineNumbers"></th>
+          <th v-for="(column, index) in columns" v-if="!column.hidden">
+            <div v-if="column.filterable">
+              <input v-if="!column.filterDropdown"
+                     type="text" class="form-control" :placeholder="'Filter ' + column.label"
+                     :value="columnFilters[column.field]"
+                     v-on:input="updateFilters(column, $event.target.value)">
+              <select v-if="column.filterDropdown" class="form-control"
+                      :value="columnFilters[column.field]"
+                      v-on:input="updateFilters(column, $event.target.value)">
+                <option value=""></option>
+                <option v-for="option in column.filterOptions" :value="option">{{ option }}</option>
+              </select>
+            </div>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="(row, index) in paginated" :class="onClick || showSelection ? 'clickable' : ''" @click="click(row, index)">
+          <th v-if="showSelection" class="row-controls"><label class="custom-radio nowrap">
+            <input type="radio" name="tableRadioSelection" v-bind:value="index" v-bind:id="index" v-model="selectedIndex"  >
+            <span></span></label></th>
+          <th v-if="lineNumbers" class="row-controls" >{{ getCurrentIndex(index) }}</th>
+          <slot name="table-row" :row="row" :formattedRow="formattedRow(row)" :index="index">
+            <td v-for="(column, i) in columns" :class="getDataStyle(i, 'td')"  v-if="!column.hidden">
+              <span v-if="!column.html">{{ collectFormatted(row, column) }}</span>
+              <span v-if="column.html" v-html="collect(row, column.field)"></span>
             </td>
-          </tr>
-        </tbody>
-      </table>
-<div class="row">
-  <div class="col-sm-6">	  
-	  <span>{{rowsPerPageText}} </span>
-	  <span v-if="perPage" class="perpage-count">{{perPage}} </span>
-	<label>
-	  <select v-if="!perPage" class="form-control" @change="onTableLength">
-		<option value="10">10</option>
-		<option value="20">20</option>
-		<option value="30">30</option>
-		<option value="40">40</option>
-		<option value="50">50</option>
-		<option value="-1">{{allText}}</option>
-	  </select>
-	</label>
-  </div>
-  <div class="col-sm-6">
-	<div class="pull-right">
-		<a href="javascript:undefined" class="page-btn" @click.prevent.stop="previousPage" tabindex="0">
-			<span class="fa fa-chevron-circle-left " v-bind:class="{ 'left': !rtl, 'right': rtl }"></span>
-			<span>{{prevText}}</span>
-		</a>
-		<span class="info">{{paginatedInfo}}</span>
-		<a href="javascript:undefined" class="page-btn" @click.prevent.stop="nextPage" tabindex="0">
-          <span >{{nextText}}</span>
-          <span class="fa fa-chevron-circle-right" v-bind:class="{ 'right': !rtl, 'left': rtl }"></span>
-        </a>
-	</div>
-  </div>
- 
-</div>
-</div>
-</template>
+          </slot>
+        </tr>
+        <tr v-if="processedRows.length === 0">
+          <td :colspan="columns.length">
+            <slot name="emptystate">
+              <div class="center-align text-disabled">
+                No data for table.
+              </div>
+            </slot>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="row">
+      <div class="col-sm-6">
+        <span>{{rowsPerPageText}} </span>
+        <span v-if="perPage" class="perpage-count">{{perPage}} </span>
+        <label>
+          <select v-if="!perPage" class="form-control" @change="onTableLength">
+            <option value="10">10</option>
+            <option value="20">20</option>
+            <option value="30">30</option>
+            <option value="40">40</option>
+            <option value="50">50</option>
+            <option value="-1">{{allText}}</option>
+          </select>
+        </label>
+      </div>
+      <div class="col-sm-6">
+        <div class="pull-right">
+          <a href="javascript:undefined" class="page-btn" @click.prevent.stop="previousPage" tabindex="0">
+            <span class="fa fa-chevron-circle-left " v-bind:class="{ 'left': !rtl, 'right': rtl }"></span>
+            <span>{{prevText}}</span>
+          </a>
+          <span class="info">{{paginatedInfo}}</span>
+          <a href="javascript:undefined" class="page-btn" @click.prevent.stop="nextPage" tabindex="0">
+            <span>{{nextText}}</span>
+            <span class="fa fa-chevron-circle-right" v-bind:class="{ 'right': !rtl, 'left': rtl }"></span>
+          </a>
+        </div>
+      </div>
 
+    </div>
+  </div>
+</template>
 <script>
-import {format, parse, compareAsc} from 'date-fns/esm'
+  import { format, parse, compareAsc } from 'date-fns/esm'
   export default {
     name: 'vue-good-table',
     props: {
-      styleClass: {default: 'table '},
+      styleClass: { default: 'table ' },
       title: '',
       columns: {},
       rows: {},
       onClick: {},
       perPage: {},
-      sortable: {default: true},
-      paginate: {default: false},
-      lineNumbers: {default: false},
-      defaultSortBy: {default: null},
-      responsive: {default: true},
-      rtl: {default: false},
+      showSelection: { default: true },
+      sortable: { default: true },
+      paginate: { default: false },
+      lineNumbers: { default: false },
+      defaultSortBy: { default: null },
+      responsive: { default: true },
+      rtl: { default: false },
 
       // search
-      globalSearch: {default: false},
-      searchTrigger: {default: null},
-      externalSearchQuery: {default: null},
+      globalSearch: { default: false },
+      searchTrigger: { default: null },
+      externalSearchQuery: { default: null },
 
       // text options
-      globalSearchPlaceholder: {default: 'Search Table'},
-      nextText: {default: 'Next'},
-      prevText: {default: 'Prev'},
-      rowsPerPageText: {default: 'Rows per page:'},
-      ofText: {default: 'of'},
-      allText: {default: 'All'},
+      globalSearchPlaceholder: { default: 'Search Table' },
+      nextText: { default: 'Next' },
+      prevText: { default: 'Prev' },
+      rowsPerPageText: { default: 'Rows per page:' },
+      ofText: { default: 'of' },
+      allText: { default: 'All' },
+
     },
 
     data: () => ({
@@ -142,14 +149,16 @@ import {format, parse, compareAsc} from 'date-fns/esm'
       timer: null,
       forceSearch: false,
       sortChanged: false,
+      selectedIndex:-1
     }),
 
     methods: {
       nextPage() {
-        if(this.currentPerPage == -1) return;
+        if (this.currentPerPage == -1) return;
         if (this.processedRows.length > this.currentPerPage * this.currentPage)
           ++this.currentPage;
         this.pageChanged();
+        this.clearSelection()
       },
 
       previousPage() {
@@ -157,10 +166,11 @@ import {format, parse, compareAsc} from 'date-fns/esm'
         if (this.currentPage > 1)
           --this.currentPage;
         this.pageChanged();
+        this.clearSelection()
       },
 
       pageChanged() {
-        this.$emit('pageChanged', {currentPage: this.currentPage, total: Math.floor(this.rows.length / this.currentPerPage)});
+        this.$emit('pageChanged', { currentPage: this.currentPage, total: Math.floor(this.rows.length / this.currentPerPage) });
       },
 
       onTableLength(e) {
@@ -177,17 +187,32 @@ import {format, parse, compareAsc} from 'date-fns/esm'
           this.sortColumn = index;
         }
         this.sortChanged = true;
+        this.clearSelection()
       },
 
       click(row, index) {
         if (this.onClick)
           this.onClick(row, index);
+
+        if (this.showSelection) {
+          this.selectedIndex = index;
+        }
+      },
+
+      clearSelection() {
+        if (this.onClick)
+          this.onClick({}, -1);
+
+        if (this.showSelection) {
+          this.selectedIndex = -1;
+        }
       },
 
       searchTable() {
-        if(this.searchTrigger == 'enter') {
+        if (this.searchTrigger == 'enter') {
           this.forceSearch = true;
           this.sortChanged = true;
+          this.clearSelection()
         }
       },
 
@@ -202,16 +227,16 @@ import {format, parse, compareAsc} from 'date-fns/esm'
           var result = obj;
           const splitter = selector.split('.');
           for (let i = 0; i < splitter.length; i++)
-            if (typeof(result) === 'undefined')
+            if (typeof (result) === 'undefined')
               return undefined;
             else
               result = result[splitter[i]];
           return result;
         }
 
-        if (typeof(field) === 'function')
+        if (typeof (field) === 'function')
           return field(obj);
-        else if (typeof(field) === 'string')
+        else if (typeof (field) === 'string')
           return dig(obj, field);
         else
           return undefined;
@@ -239,7 +264,7 @@ import {format, parse, compareAsc} from 'date-fns/esm'
 
         if (value === undefined) return '';
         //lets format the resultant data
-        switch(column.type) {
+        switch (column.type) {
           case 'decimal':
             return formatDecimal(value);
           case 'percentage':
@@ -263,7 +288,7 @@ import {format, parse, compareAsc} from 'date-fns/esm'
 
       // Get the necessary style-classes for the given column
       //--------------------------------------------------------
-      columnHeaderClass(column, index){
+      columnHeaderClass(column, index) {
         var classString = '';
         if (this.sortable) {
           classString += 'sorting ';
@@ -290,7 +315,7 @@ import {format, parse, compareAsc} from 'date-fns/esm'
           case 'date':
           case 'text':
             classString += 'right-align ';
-          break;
+            break;
           default:
             classString += 'left-align ';
             break;
@@ -307,7 +332,7 @@ import {format, parse, compareAsc} from 'date-fns/esm'
       updateFilters(column, value) {
         const _this = this;
         if (this.timer) clearTimeout(this.timer);
-        this.timer = setTimeout(function(){
+        this.timer = setTimeout(function () {
           _this.$set(_this.columnFilters, column.field, value)
         }, 400);
 
@@ -317,24 +342,24 @@ import {format, parse, compareAsc} from 'date-fns/esm'
       filterRows() {
         var computedRows = JSON.parse(JSON.stringify(this.rows));
         // we need to preserve the original index of rows so lets do that
-        for(const [index, row] of computedRows.entries()) {
+        for (const [index, row] of computedRows.entries()) {
           row.originalIndex = index;
         }
 
-        if(this.hasFilterRow) {
-          for (var col of this.columns){
+        if (this.hasFilterRow) {
+          for (var col of this.columns) {
             if (col.filterable && this.columnFilters[col.field]) {
               computedRows = computedRows.filter(row => {
 
                 // If column has a custom filter, use that.
 
                 if (col.filter) {
-                    return col.filter(this.collect(row, col.field), this.columnFilters[col.field])
+                  return col.filter(this.collect(row, col.field), this.columnFilters[col.field])
                 }
 
                 // Use default filters
 
-                switch(col.type) {
+                switch (col.type) {
                   case 'number':
                   case 'percentage':
                   case 'decimal':
@@ -346,7 +371,7 @@ import {format, parse, compareAsc} from 'date-fns/esm'
                     return this.collect(row, col.field)
                       .toLowerCase()
                       .startsWith(
-                        (this.columnFilters[col.field]).toLowerCase()
+                      (this.columnFilters[col.field]).toLowerCase()
                       );
                 }
               });
@@ -354,6 +379,8 @@ import {format, parse, compareAsc} from 'date-fns/esm'
           }
         }
         this.filteredRows = computedRows;
+
+        this.clearSelection()
       },
 
       getCurrentIndex(index) {
@@ -363,13 +390,13 @@ import {format, parse, compareAsc} from 'date-fns/esm'
 
     watch: {
       columnFilters: {
-          handler: function(newObj){
-            this.filterRows();
-          },
-          deep: true,
+        handler: function (newObj) {
+          this.filterRows();
+        },
+        deep: true,
       },
       rows: {
-        handler: function(newObj){
+        handler: function (newObj) {
           this.filterRows();
         },
         deep: true,
@@ -377,7 +404,7 @@ import {format, parse, compareAsc} from 'date-fns/esm'
       perPage() {
         if (this.perPage) {
           this.currentPerPage = this.perPage;
-        }else{
+        } else {
           //reset to default
           this.currentPerPage = 10;
         }
@@ -387,7 +414,7 @@ import {format, parse, compareAsc} from 'date-fns/esm'
 
     computed: {
 
-      searchTerm(){
+      searchTerm() {
         return (this.externalSearchQuery != null) ? this.externalSearchQuery : this.globalSearchTerm;
       },
 
@@ -395,16 +422,16 @@ import {format, parse, compareAsc} from 'date-fns/esm'
       globalSearchAllowed() {
         if (this.globalSearch
           && !!this.globalSearchTerm
-          && this.searchTrigger != 'enter'){
+          && this.searchTrigger != 'enter') {
           return true;
         }
 
         if (this.externalSearchQuery != null
-           && this.searchTrigger != 'enter'){
+          && this.searchTrigger != 'enter') {
           return true;
         }
 
-        if (this.forceSearch){
+        if (this.forceSearch) {
           this.forceSearch = false;
           return true;
         }
@@ -415,10 +442,10 @@ import {format, parse, compareAsc} from 'date-fns/esm'
       // to create a filter row, we need to
       // make sure that there is atleast 1 column
       // that requires filtering
-      hasFilterRow(){
+      hasFilterRow() {
         if (!this.globalSearch) {
-          for(var col of this.columns){
-            if(col.filterable){
+          for (var col of this.columns) {
+            if (col.filterable) {
               return true;
             }
           }
@@ -430,15 +457,15 @@ import {format, parse, compareAsc} from 'date-fns/esm'
       // or sort type changes
       //----------------------------------------
       processedRows() {
-       var computedRows = this.filteredRows;
+        var computedRows = this.filteredRows;
 
         // take care of the global filter here also
         if (this.globalSearchAllowed) {
           var filteredRows = [];
           for (var row of this.rows) {
-            for(var col of this.columns) {
+            for (var col of this.columns) {
               if (String(this.collectFormatted(row, col)).toLowerCase()
-                  .search(this.searchTerm.toLowerCase()) > -1) {
+                .search(this.searchTerm.toLowerCase()) > -1) {
                 filteredRows.push(row);
                 break;
               }
@@ -456,7 +483,7 @@ import {format, parse, compareAsc} from 'date-fns/esm'
 
           this.sortChanged = false;
 
-          computedRows = computedRows.sort((x,y) => {
+          computedRows = computedRows.sort((x, y) => {
             if (!this.columns[this.sortColumn])
               return 0;
 
@@ -466,7 +493,7 @@ import {format, parse, compareAsc} from 'date-fns/esm'
               //take care of dates too.
               if (this.columns[this.sortColumn].type === 'date') {
                 d = parse(d + '', this.columns[this.sortColumn].inputFormat, new Date());
-              } else if (typeof(d) === 'string') {
+              } else if (typeof (d) === 'string') {
                 d = d.toLowerCase();
                 if (this.columns[this.sortColumn].type == 'number')
                   d = d.indexOf('.') >= 0 ? parseFloat(d) : parseInt(d);
@@ -531,7 +558,7 @@ import {format, parse, compareAsc} from 'date-fns/esm'
         infoStr += Math.min(this.processedRows.length, this.currentPerPage * this.currentPage);
         infoStr += ' ' + this.ofText + ' ';
         infoStr += this.processedRows.length;
-        if(this.currentPerPage == -1){
+        if (this.currentPerPage == -1) {
           return '1 - ' + this.processedRows.length + ' ' + this.ofText + ' ' + this.processedRows.length;
         }
         return infoStr;
@@ -542,7 +569,7 @@ import {format, parse, compareAsc} from 'date-fns/esm'
       this.filteredRows = JSON.parse(JSON.stringify(this.rows));
 
       // we need to preserve the original index of rows so lets do that
-      for(const [index, row] of this.filteredRows.entries()) {
+      for (const [index, row] of this.filteredRows.entries()) {
         row.originalIndex = index;
       }
 
@@ -564,4 +591,3 @@ import {format, parse, compareAsc} from 'date-fns/esm'
     }
   }
 </script>
-
