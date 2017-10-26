@@ -1,6 +1,5 @@
 <template>
   <div>
-    {{showSelection}}
     <table ref="table" :class="styleClass">
       <thead>
         <tr v-if="globalSearch && externalSearchQuery == null">
