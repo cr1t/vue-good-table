@@ -199,11 +199,12 @@
       },
 
       clearSelection() {
+        this.selectedIndex = -1;
         if (this.onClick)
           this.onClick({}, -1);
 
         if (this.showSelection) {
-          this.selectedIndex = -1;
+          this.onClick({}, -1);
         }
       },
 
