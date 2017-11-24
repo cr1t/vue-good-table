@@ -3358,7 +3358,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
     globalSearchPlaceholder: { default: 'Search Table' },
     nextText: { default: 'Next' },
     prevText: { default: 'Prev' },
-    rowsPerPageText: { default: 'Rows per page:' },
+    rowsPerPageText: { default: 'Rows per page' },
     ofText: { default: 'of' },
     allText: { default: 'All' }
 
@@ -3388,7 +3388,6 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
       this.clearSelection();
     },
     previousPage: function previousPage() {
-
       if (this.currentPage > 1) --this.currentPage;
       this.pageChanged();
       this.clearSelection();
@@ -3453,9 +3452,12 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
       }
 
       function formatDate(v) {
-        if (v == null) return "";else return moment(v).format('YYYY MMM DD');
+        if (v == null) return "";else return moment(v).format('DD MMM YYYY');
       }
 
+      function formatBool(v) {
+        if (v == true) return "Yes";else return "No";
+      }
       var value = this.collect(obj, column.field);
 
       if (value === undefined) return '';
@@ -3467,6 +3469,8 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
           return formatPercent(value);
         case 'date':
           return formatDate(value);
+        case 'boolean':
+          return formatBool(value);
         default:
           return value;
       }
@@ -3599,6 +3603,8 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
                   case 'percentage':
                   case 'decimal':
                     return _this2.collect(row, col.field) == _this2.columnFilters[col.field];
+                  case 'boolean':
+                    return _this2.collect(row, col.field) == eval(_this2.columnFilters[col.field]);
                   default:
                     return _this2.collect(row, col.field).toLowerCase().startsWith(_this2.columnFilters[col.field].toLowerCase());
                 }
@@ -11546,6 +11552,7 @@ module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c
     staticClass: "line-numbers"
   }) : _vm._e(), _vm._v(" "), _vm._l((_vm.columns), function(column, index) {
     return (!column.hidden) ? _c('th', {
+      key: column.field,
       class: _vm.columnHeaderClass(column, index),
       style: ({
         width: column.width ? column.width : 'auto'
@@ -11561,7 +11568,9 @@ module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c
   }), _vm._v(" "), _vm._t("thead-tr")], 2), _vm._v(" "), (_vm.hasFilterRow) ? _c('tr', [(_vm.showSelection) ? _c('th', {
     staticClass: "line-numbers"
   }) : _vm._e(), _vm._v(" "), (_vm.lineNumbers) ? _c('th') : _vm._e(), _vm._v(" "), _vm._l((_vm.columns), function(column, index) {
-    return (!column.hidden) ? _c('th', [(column.filterable) ? _c('div', [(!column.filterDropdown) ? _c('input', {
+    return (!column.hidden) ? _c('th', {
+      key: column.field
+    }, [(column.filterable) ? _c('div', [(!column.filterDropdown) ? _c('input', {
       staticClass: "form-control",
       attrs: {
         "type": "text",
@@ -11591,13 +11600,15 @@ module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c
       }
     }), _vm._v(" "), _vm._l((column.filterOptions), function(option) {
       return _c('option', {
+        key: option.value,
         domProps: {
-          "value": option
+          "value": option.value
         }
-      }, [_vm._v(_vm._s(option))])
+      }, [_vm._v(_vm._s(option.text))])
     })], 2) : _vm._e()]) : _vm._e()]) : _vm._e()
   })], 2) : _vm._e()]), _vm._v(" "), _c('tbody', [_vm._l((_vm.paginated), function(row, index) {
     return _c('tr', {
+      key: index,
       class: _vm.onClick || _vm.showSelection ? 'clickable' : '',
       on: {
         "click": function($event) {
@@ -11631,8 +11642,12 @@ module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c
       }
     }), _vm._v(" "), _c('span')])]) : _vm._e(), _vm._v(" "), (_vm.lineNumbers) ? _c('th', {
       staticClass: "row-controls"
-    }, [_vm._v(_vm._s(_vm.getCurrentIndex(index)))]) : _vm._e(), _vm._v(" "), _vm._t("table-row", _vm._l((_vm.columns), function(column, i) {
+    }, [_vm._v(_vm._s(_vm.getCurrentIndex(index)))]) : _vm._e(), _vm._v(" "), _vm._t("table-row-before", null, {
+      row: row,
+      index: index
+    }), _vm._v(" "), _vm._t("table-row", _vm._l((_vm.columns), function(column, i) {
       return (!column.hidden) ? _c('td', {
+        key: column.field,
         class: _vm.getDataStyle(i, 'td')
       }, [(!column.html) ? _c('span', [_vm._v(_vm._s(_vm.collectFormatted(row, column)))]) : _vm._e(), _vm._v(" "), (column.html) ? _c('span', {
         domProps: {
@@ -11642,6 +11657,9 @@ module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c
     }), {
       row: row,
       formattedRow: _vm.formattedRow(row),
+      index: index
+    }), _vm._v(" "), _vm._t("table-row-after", null, {
+      row: row,
       index: index
     })], 2)
   }), _vm._v(" "), (_vm.processedRows.length === 0) ? _c('tr', [_c('td', {
@@ -11688,7 +11706,10 @@ module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c
   }, [_vm._v(_vm._s(_vm.allText))])]) : _vm._e()])]), _vm._v(" "), _c('div', {
     staticClass: "col-sm-6"
   }, [_c('div', {
-    staticClass: "pull-right"
+    staticClass: "pull-right",
+    staticStyle: {
+      "padding-top": "5px"
+    }
   }, [_c('a', {
     staticClass: "page-btn",
     attrs: {
@@ -11707,7 +11728,7 @@ module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c
     class: {
       'left': !_vm.rtl, 'right': _vm.rtl
     }
-  }), _vm._v(" "), _c('span', [_vm._v(_vm._s(_vm.prevText))])]), _vm._v(" "), _c('span', {
+  }), _vm._v(" "), _c('span', [_vm._v(" " + _vm._s(_vm.prevText))])]), _vm._v(" "), _c('span', {
     staticClass: "info"
   }, [_vm._v(_vm._s(_vm.paginatedInfo))]), _vm._v(" "), _c('a', {
     staticClass: "page-btn",
@@ -11722,7 +11743,7 @@ module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c
         _vm.nextPage($event)
       }
     }
-  }, [_c('span', [_vm._v(_vm._s(_vm.nextText))]), _vm._v(" "), _c('span', {
+  }, [_c('span', [_vm._v(_vm._s(_vm.nextText) + " ")]), _vm._v(" "), _c('span', {
     staticClass: "fa fa-chevron-circle-right",
     class: {
       'right': !_vm.rtl, 'left': _vm.rtl

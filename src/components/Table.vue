@@ -16,6 +16,7 @@
           <th v-if="showSelection" class="line-numbers"></th>
           <th v-if="lineNumbers" class="line-numbers"></th>
           <th v-for="(column, index) in columns"
+            :key="column.field" 
               @click="sort(index)"
               :class="columnHeaderClass(column, index)"
               :style="{width: column.width ? column.width : 'auto'}"
@@ -31,7 +32,7 @@
             
           </th>
           <th v-if="lineNumbers"></th>
-          <th v-for="(column, index) in columns" v-if="!column.hidden">
+          <th v-for="(column, index) in columns" :key="column.field"  v-if="!column.hidden">
             <div v-if="column.filterable">
               <input v-if="!column.filterDropdown"
                      type="text" class="form-control" :placeholder="'Filter ' + column.label"
@@ -41,24 +42,26 @@
                       :value="columnFilters[column.field]"
                       v-on:input="updateFilters(column, $event.target.value)">
                 <option value=""></option>
-                <option v-for="option in column.filterOptions" :value="option">{{ option }}</option>
+                <option v-for="option in column.filterOptions"  :key="option.value" :value="option.value">{{ option.text }}</option>
               </select>
             </div>
           </th>
         </tr>
       </thead>
       <tbody>
-        <tr v-for="(row, index) in paginated" :class="onClick || showSelection ? 'clickable' : ''" @click="click(row, index)">
+        <tr v-for="(row, index) in paginated"  :key="index" :class="onClick || showSelection ? 'clickable' : ''" @click="click(row, index)">
           <th v-if="showSelection" class="row-controls"><label class="custom-radio nowrap">
             <input type="radio" name="tableRadioSelection" v-bind:value="index" v-bind:id="index" v-model="selectedIndex"  >
             <span></span></label></th>
           <th v-if="lineNumbers" class="row-controls" >{{ getCurrentIndex(index) }}</th>
+          <slot name="table-row-before" :row="row" :index="index"></slot>
           <slot name="table-row" :row="row" :formattedRow="formattedRow(row)" :index="index">
-            <td v-for="(column, i) in columns" :class="getDataStyle(i, 'td')"  v-if="!column.hidden">
+            <td v-for="(column, i) in columns"  :key="column.field"  :class="getDataStyle(i, 'td')"  v-if="!column.hidden">
               <span v-if="!column.html">{{ collectFormatted(row, column) }}</span>
               <span v-if="column.html" v-html="collect(row, column.field)"></span>
             </td>
           </slot>
+          <slot name="table-row-after" :row="row" :index="index"></slot>
         </tr>
         <tr v-if="processedRows.length === 0">
           <td :colspan="columns.length">
@@ -87,14 +90,14 @@
         </label>
       </div>
       <div class="col-sm-6">
-        <div class="pull-right">
+        <div class="pull-right" style="padding-top:5px;" >
           <a href="javascript:undefined" class="page-btn" @click.prevent.stop="previousPage" tabindex="0">
             <span class="fa fa-chevron-circle-left " v-bind:class="{ 'left': !rtl, 'right': rtl }"></span>
-            <span>{{prevText}}</span>
+            <span> {{prevText}}</span>
           </a>
           <span class="info">{{paginatedInfo}}</span>
           <a href="javascript:undefined" class="page-btn" @click.prevent.stop="nextPage" tabindex="0">
-            <span>{{nextText}}</span>
+            <span>{{nextText}} </span>
             <span class="fa fa-chevron-circle-right" v-bind:class="{ 'right': !rtl, 'left': rtl }"></span>
           </a>
         </div>
@@ -131,7 +134,7 @@
       globalSearchPlaceholder: { default: 'Search Table' },
       nextText: { default: 'Next' },
       prevText: { default: 'Prev' },
-      rowsPerPageText: { default: 'Rows per page:' },
+      rowsPerPageText: { default: 'Rows per page' },
       ofText: { default: 'of' },
       allText: { default: 'All' },
 
@@ -161,7 +164,6 @@
       },
 
       previousPage() {
-
         if (this.currentPage > 1)
           --this.currentPage;
         this.pageChanged();
@@ -257,9 +259,16 @@
           if (v == null)
             return "";
           else
-            return moment(v).format('YYYY MMM DD');
+            return moment(v).format('DD MMM YYYY');
         }
 
+        function formatBool(v)
+        {
+          if(v == true)
+            return "Yes"
+          else
+            return "No";
+        }
         var value = this.collect(obj, column.field);
 
         if (value === undefined) return '';
@@ -271,6 +280,8 @@
             return formatPercent(value);
           case 'date':
             return formatDate(value);
+          case 'boolean':
+            return formatBool(value);
           default:
             return value;
         }
@@ -335,7 +346,6 @@
         this.timer = setTimeout(function () {
           _this.$set(_this.columnFilters, column.field, value)
         }, 400);
-
       },
 
       //method to filter rows
@@ -365,7 +375,9 @@
                   case 'decimal':
                     //in case of numeric value we need to do an exact
                     //match for now`
-                    return this.collect(row, col.field) == this.columnFilters[col.field];
+                    return this.collect(row, col.field) == this.columnFilters[col.field];  
+                  case 'boolean':
+                    return this.collect(row, col.field) == eval(this.columnFilters[col.field]);  
                   default:
                     //text value lets test starts with
                     return this.collect(row, col.field)
@@ -409,11 +421,9 @@
           this.currentPerPage = 10;
         }
       }
-
     },
 
     computed: {
-
       searchTerm() {
         return (this.externalSearchQuery != null) ? this.externalSearchQuery : this.globalSearchTerm;
       },
