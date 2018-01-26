@@ -7,7 +7,7 @@
     "bundle:min": "cross-env MINIFY=true webpack --progress --config build/webpack.bundle.conf.js",
     "bundle:full": "cross-env MINIFY=false webpack --progress --config build/webpack.bundle.conf.js",
     "build": "npm run bundle:min && npm run bundle:full && npm run copy",
-	"copy": "xcopy /s C:\\Projects\\vue-good-table\\dist C:\\Projects\\SoterionForSAP\\Soterion.Portal.MVC\\node_modules\\vue-good-table\\dist /y && xcopy /s C:\\Projects\\vue-good-table\\src C:\\Projects\\SoterionForSAP\\Soterion.Portal.MVC\\node_modules\\vue-good-table\\src /y",
+    "copy": "xcopy /s C:\\Projects\\vue-good-table\\dist C:\\Projects\\SoterionForSAP\\Soterion.Portal.MVC\\node_modules\\vue-good-table\\dist /y && xcopy /s C:\\Projects\\vue-good-table\\src C:\\Projects\\SoterionForSAP\\Soterion.Portal.MVC\\node_modules\\vue-good-table\\src /y",
     "dev": "node build/dev-server.js",
     "unit": "cross-env BABEL_ENV=test karma start test/unit/karma.conf.js --single-run",
     "unit:watch": "cross-env BABEL_ENV=test karma start test/unit/karma.conf.js --watch",

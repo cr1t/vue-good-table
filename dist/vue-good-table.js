@@ -3358,7 +3358,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
     globalSearchPlaceholder: { default: 'Search Table' },
     nextText: { default: 'Next' },
     prevText: { default: 'Prev' },
-    rowsPerPageText: { default: 'Rows per page' },
+    rowsPerPageText: { default: 'Rows per page :' },
     ofText: { default: 'of' },
     allText: { default: 'All' }
 
@@ -3395,8 +3395,8 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
     pageChanged: function pageChanged() {
       this.$emit('pageChanged', { currentPage: this.currentPage, total: Math.floor(this.rows.length / this.currentPerPage) });
     },
-    onTableLength: function onTableLength(e) {
-      this.currentPerPage = e.target.value;
+    onTableLength: function onTableLength(value) {
+      this.currentPerPage = value;
     },
     sort: function sort(index) {
       if (!this.sortable) return;
@@ -3452,7 +3452,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
       }
 
       function formatDate(v) {
-        if (v == null) return "";else return moment(v).format('DD MMM YYYY');
+        if (v == null) return "";else return moment(v).format('YYYY.MM.DD');
       }
 
       function formatBool(v) {
@@ -11668,43 +11668,74 @@ module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c
     }
   }, [_vm._t("emptystate", [_c('div', {
     staticClass: "center-align text-disabled"
-  }, [_vm._v("\n              No data for table.\n            ")])])], 2)]) : _vm._e()], 2)]), _vm._v(" "), _c('div', {
+  }, [_vm._v("\n              No data for table.\n            ")])])], 2)]) : _vm._e()], 2)]), _vm._v(" "), _c('br'), _vm._v(" "), _c('div', {
     staticClass: "row"
   }, [_c('div', {
-    staticClass: "col-sm-6"
+    staticClass: "col-sm-2"
   }, [_c('span', [_vm._v(_vm._s(_vm.rowsPerPageText) + " ")]), _vm._v(" "), (_vm.perPage) ? _c('span', {
     staticClass: "perpage-count"
-  }, [_vm._v(_vm._s(_vm.perPage) + " ")]) : _vm._e(), _vm._v(" "), _c('label', [(!_vm.perPage) ? _c('select', {
-    staticClass: "form-control",
+  }, [_vm._v(_vm._s(_vm.perPage) + " ")]) : _vm._e(), _vm._v(" "), _c('label', [(!_vm.perPage) ? _c('a', {
+    staticClass: "clickCursor",
+    class: {
+      selected: _vm.currentPerPage == 10
+    },
     on: {
-      "change": _vm.onTableLength
+      "click": function($event) {
+        _vm.onTableLength(10)
+      }
     }
-  }, [_c('option', {
-    attrs: {
-      "value": "10"
+  }, [_vm._v("10")]) : _vm._e(), _vm._v(" \n          "), (!_vm.perPage) ? _c('a', {
+    staticClass: "clickCursor",
+    class: {
+      selected: _vm.currentPerPage == 20
+    },
+    on: {
+      "click": function($event) {
+        _vm.onTableLength(20)
+      }
     }
-  }, [_vm._v("10")]), _vm._v(" "), _c('option', {
-    attrs: {
-      "value": "20"
+  }, [_vm._v("20")]) : _vm._e(), _vm._v(" \n          "), (!_vm.perPage) ? _c('a', {
+    staticClass: "clickCursor",
+    class: {
+      selected: _vm.currentPerPage == 30
+    },
+    on: {
+      "click": function($event) {
+        _vm.onTableLength(30)
+      }
     }
-  }, [_vm._v("20")]), _vm._v(" "), _c('option', {
-    attrs: {
-      "value": "30"
+  }, [_vm._v("30")]) : _vm._e(), _vm._v(" \n          "), (!_vm.perPage) ? _c('a', {
+    staticClass: "clickCursor",
+    class: {
+      selected: _vm.currentPerPage == 40
+    },
+    on: {
+      "click": function($event) {
+        _vm.onTableLength(40)
+      }
     }
-  }, [_vm._v("30")]), _vm._v(" "), _c('option', {
-    attrs: {
-      "value": "40"
+  }, [_vm._v("40")]) : _vm._e(), _vm._v(" \n          "), (!_vm.perPage) ? _c('a', {
+    staticClass: "clickCursor",
+    class: {
+      selected: _vm.currentPerPage == 50
+    },
+    on: {
+      "click": function($event) {
+        _vm.onTableLength(50)
+      }
     }
-  }, [_vm._v("40")]), _vm._v(" "), _c('option', {
-    attrs: {
-      "value": "50"
+  }, [_vm._v("50")]) : _vm._e(), _vm._v(" \n          "), (!_vm.perPage) ? _c('a', {
+    staticClass: "clickCursor",
+    class: {
+      selected: _vm.currentPerPage == -1
+    },
+    on: {
+      "click": function($event) {
+        _vm.onTableLength(-1)
+      }
     }
-  }, [_vm._v("50")]), _vm._v(" "), _c('option', {
-    attrs: {
-      "value": "-1"
-    }
-  }, [_vm._v(_vm._s(_vm.allText))])]) : _vm._e()])]), _vm._v(" "), _c('div', {
-    staticClass: "col-sm-6"
+  }, [_vm._v(_vm._s(_vm.allText))]) : _vm._e()])]), _vm._v(" "), _c('div', {
+    staticClass: "col-sm-10"
   }, [_c('div', {
     staticClass: "pull-right",
     staticStyle: {

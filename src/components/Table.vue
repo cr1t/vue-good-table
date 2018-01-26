@@ -74,22 +74,21 @@
         </tr>
       </tbody>
     </table>
+    <br/>
     <div class="row">
-      <div class="col-sm-6">
+      <div class="col-sm-2">
         <span>{{rowsPerPageText}} </span>
         <span v-if="perPage" class="perpage-count">{{perPage}} </span>
         <label>
-          <select v-if="!perPage" class="form-control" @change="onTableLength">
-            <option value="10">10</option>
-            <option value="20">20</option>
-            <option value="30">30</option>
-            <option value="40">40</option>
-            <option value="50">50</option>
-            <option value="-1">{{allText}}</option>
-          </select>
+            <a v-if="!perPage" class="clickCursor" :class="{selected:currentPerPage==10}" v-on:click="onTableLength(10)">10</a>&nbsp;
+            <a v-if="!perPage" class="clickCursor" :class="{selected:currentPerPage==20}" v-on:click="onTableLength(20)">20</a>&nbsp;
+            <a v-if="!perPage" class="clickCursor" :class="{selected:currentPerPage==30}" v-on:click="onTableLength(30)">30</a>&nbsp;
+            <a v-if="!perPage" class="clickCursor" :class="{selected:currentPerPage==40}" v-on:click="onTableLength(40)">40</a>&nbsp;
+            <a v-if="!perPage" class="clickCursor" :class="{selected:currentPerPage==50}" v-on:click="onTableLength(50)">50</a>&nbsp;
+            <a v-if="!perPage" class="clickCursor" :class="{selected:currentPerPage==-1}" v-on:click="onTableLength(-1)">{{allText}}</a>
         </label>
       </div>
-      <div class="col-sm-6">
+      <div class="col-sm-10">
         <div class="pull-right" style="padding-top:5px;" >
           <a href="javascript:undefined" class="page-btn" @click.prevent.stop="previousPage" tabindex="0">
             <span class="fa fa-chevron-circle-left " v-bind:class="{ 'left': !rtl, 'right': rtl }"></span>
@@ -134,7 +133,7 @@
       globalSearchPlaceholder: { default: 'Search Table' },
       nextText: { default: 'Next' },
       prevText: { default: 'Prev' },
-      rowsPerPageText: { default: 'Rows per page' },
+      rowsPerPageText: { default: 'Rows per page :' },
       ofText: { default: 'of' },
       allText: { default: 'All' },
 
@@ -174,8 +173,8 @@
         this.$emit('pageChanged', { currentPage: this.currentPage, total: Math.floor(this.rows.length / this.currentPerPage) });
       },
 
-      onTableLength(e) {
-        this.currentPerPage = e.target.value;
+      onTableLength(value) {
+        this.currentPerPage = value;
       },
 
       sort(index) {
@@ -259,7 +258,7 @@
           if (v == null)
             return "";
           else
-            return moment(v).format('DD MMM YYYY');
+            return moment(v).format('YYYY.MM.DD');
         }
 
         function formatBool(v)
